@@ -439,10 +439,16 @@ func unmarshalAttribute(
 	}
 
 	// Handle field containing slice of structs
-	if fieldValue.Type().Kind() == reflect.Slice &&
-		reflect.TypeOf(fieldValue.Interface()).Elem().Kind() == reflect.Struct {
-		value, err = handleStructSlice(attribute, args, fieldType, fieldValue)
-		return
+	if fieldValue.Type().Kind() == reflect.Slice {
+		elem := reflect.TypeOf(fieldValue.Interface()).Elem()
+		if elem.Kind() == reflect.Ptr {
+			elem = elem.Elem()
+		}
+
+		if elem.Kind() == reflect.Struct {
+			value, err = handleStructSlice(attribute, args, fieldType, fieldValue)
+			return
+		}
 	}
 
 	// JSON value was a float (numeric)
